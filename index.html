@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Фотосинтез — интерактивный тренажёр (10 класс)</title>
+<meta name="description" content="Интерактивный тренажёр по биологии: фазы фотосинтеза, анализ графиков и экспериментальных данных.">
+<style>
+  :root{
+    --green:#2e8b57; --green-dark:#1f6b41; --green-light:#e8f5ec;
+    --ink:#1c2a22; --muted:#5d6f66; --line:#d6e3db;
+    --red:#c0392b; --red-light:#fdecea; --amber:#b7791f;
+    --bg:#f4f8f5;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; color:var(--ink); line-height:1.55;
+    font-family:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+    background:linear-gradient(180deg,#eaf4ee 0,#f7fbf8 320px,#f7fbf8 100%);
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:0 16px 70px}
+  header.top{padding:30px 0 6px}
+  h1{font-size:clamp(1.35rem,3.2vw,2rem);margin:0 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:0}
+  .goal{
+    display:inline-block;margin-top:14px;background:#fff;border:1px solid var(--line);
+    border-radius:12px;padding:10px 16px;font-size:.92rem;box-shadow:0 1px 4px rgba(28,42,34,.05)
+  }
+  .goal b{color:var(--green-dark)}
+  .hud{margin-top:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .hud-bar{flex:1 1 220px;height:8px;background:#dfeae3;border-radius:999px;overflow:hidden}
+  .hud-fill{height:100%;width:0;background:linear-gradient(90deg,#4caf7d,#2e8b57);border-radius:999px;transition:width .45s ease}
+  .hud-text{font-size:.88rem;color:var(--muted)}
+
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 18px}
+  .tab{
+    display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;
+    border-radius:999px;padding:9px 16px;font:inherit;font-size:.9rem;font-weight:600;
+    color:var(--muted);cursor:pointer;transition:.18s;
+  }
+  .tab:hover{border-color:var(--green);color:var(--green-dark)}
+  .tab.active{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 6px 16px rgba(46,139,87,.25)}
+  .tab .badge{
+    display:grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;
+    background:rgba(0,0,0,.07);font-size:.78rem;font-weight:700
+  }
+  .tab.active .badge{background:rgba(255,255,255,.22)}
+  .tab.done{border-color:#9ad1b0;background:var(--green-light);color:var(--green-dark)}
+  .tab.done .badge{background:var(--green);color:#fff}
+  .tab.active.done{background:var(--green);color:#fff}
+  .tab.active.done .badge{background:rgba(255,255,255,.25);color:#fff}
+
+  .task{display:none;animation:fade .25s ease}
+  .task.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .card{
+    background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 24px;
+    box-shadow:0 2px 10px rgba(28,42,34,.05);margin-bottom:18px
+  }
+  .card h2{font-size:1.12rem;margin:0 0 16px; display:flex; align-items:center; flex-wrap:wrap; gap:10px;}
+  .card h3{font-size:1.05rem;margin:20px 0 10px;color:var(--green-dark)}
+  .hint{color:var(--muted);font-size:.92rem;margin:0 0 18px}
+  .scenario{background:var(--green-light);border-left:4px solid var(--green);border-radius:0 10px 10px 0;padding:14px 16px;font-size:.95rem;margin-bottom:18px}
+
+  .badge-tag {
+    display: inline-block;
+    background: #e6f3eb;
+    color: #2e8b57;
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .q-card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px;background:#fff;transition:.2s}
+  .q-card.is-right{border-color:#9ad1b0;background:#f6fdf8}
+  .q-card.is-wrong{border-color:#f0b4ac;background:#fdf8f7}
+  .q-head{display:flex;gap:10px;font-weight:600;margin-bottom:12px}
+  .q-num{
+    flex:0 0 26px;height:26px;border-radius:50%;background:var(--green-light);color:var(--green-dark);
+    display:grid;place-items:center;font-size:.85rem;font-weight:700;margin-top:1px
+  }
+  .q-opts{display:grid;gap:8px}
+  .opt{
+    display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;
+    background:#fbfdfb;border:1px solid var(--line);border-radius:10px;padding:10px 14px;
+    cursor:pointer;font:inherit;font-size:.95rem;color:inherit;transition:.15s
+  }
+  .opt:hover:not(:disabled){border-color:#9ad1b0;background:#f3faf5}
+  .opt:disabled{cursor:default}
+  .opt .dot{flex:0 0 16px;height:16px;border-radius:50%;border:2px solid #c3d6cb;margin-top:3px;transition:.15s}
+  .opt.selected{border-color:var(--green);background:#eef8f1}
+  .opt.selected .dot{background:var(--green);border-color:var(--green);box-shadow:inset 0 0 0 3px #eef8f1}
+  .opt.correct{border-color:var(--green);background:var(--green-light)}
+  .opt.correct .dot{background:var(--green);border-color:var(--green);box-shadow:inset 0 0 0 3px #fff}
+  .opt.wrong{border-color:var(--red);background:var(--red-light)}
+  .opt.wrong .dot{background:var(--red);border-color:var(--red);box-shadow:inset 0 0 0 3px #fff}
+
+  .feedback{display:none;margin-top:12px;padding:12px 14px;border-radius:10px;font-size:.93rem}
+  .feedback.show{display:block}
+  .fb-ok{background:var(--green-light);border-left:4px solid var(--green)}
+  .fb-bad{background:var(--red-light);border-left:4px solid var(--red)}
+  .feedback ol{margin:8px 0 0;padding-left:22px}
+  .feedback li{margin-bottom:4px}
+
+  .action-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .btn{border-radius:10px;padding:10px 22px;font:inherit;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.15s}
+  .btn-primary{background:var(--green);color:#fff}
+  .btn-primary:hover{background:var(--green-dark)}
+  .btn-ghost{background:#fff;border-color:var(--line);color:var(--green-dark)}
+  .btn-ghost:hover{border-color:var(--green);background:#f3faf5}
+  .btn:disabled {opacity: 0.5; cursor: not-allowed;}
+  .score{color:var(--muted);font-size:.93rem}
+  .score b{color:var(--ink)}
+
+  .seq-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:720px){.seq-wrap{grid-template-columns:1fr}}
+  .seq-col h4{margin:0 0 10px;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+  .seq-pool,.seq-answer{display:grid;gap:8px;align-content:start;min-height:70px;padding:10px;border-radius:12px;border:1px dashed var(--line);background:#fafdfb}
+  .seq-item{
+    display:flex;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;cursor:pointer;font:inherit;font-size:.92rem;
+    text-align:left;color:inherit;transition:.15s
+  }
+  .seq-item:hover{border-color:#9ad1b0;background:#f3faf5}
+  .seq-num{flex:0 0 24px;height:24px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:.78rem;font-weight:700}
+  .seq-item.right{border-color:var(--green);background:var(--green-light)}
+  .seq-item.right .seq-num{background:var(--green)}
+  .seq-item.wrong{border-color:var(--red);background:var(--red-light)}
+  .seq-item.wrong .seq-num{background:var(--red)}
+  .seq-empty{color:var(--muted);font-size:.88rem;margin:8px}
+
+  .chart-box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px 10px 4px;margin-bottom:14px}
+  
+  footer.note{color:var(--muted);font-size:.82rem;text-align:center;padding-top:6px}
+
+  /* Стили для салюта и модального окна */
+  #fw-canvas {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none;
+    z-index: 10000;
+    display: none;
+  }
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; opacity: 1; transition: opacity 0.3s;
+  }
+  .modal.hidden { display: none; opacity: 0; pointer-events: none; }
+  .modal-content {
+    background: white; padding: 30px; border-radius: 16px;
+    text-align: center; max-width: 400px; width: 90%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transform: translateY(0); transition: transform 0.3s;
+  }
+  .modal.hidden .modal-content { transform: translateY(20px); }
+  .score-big { font-size: 3rem; font-weight: 700; color: #2e8b57; margin: 15px 0 5px; line-height: 1; }
+  .score-desc { color: #5d6f66; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>Фотосинтез: фазы и условия протекания</h1>
+    <p class="sub">Интерактивный тренажёр · Биология · 10 класс</p>
+    <div class="goal">🎯 <b>Образовательная цель:</b> узнать, как осуществляются световая и темновая фазы фотосинтеза, и научиться объяснять зависимость процесса от условий среды.</div>
+    <div class="hud">
+      <div class="hud-bar"><div class="hud-fill" id="bar"></div></div>
+      <div class="hud-text" id="stats">Заданий выполнено: 0/4</div>
+      <button type="button" class="btn btn-ghost" id="btn-show-results" disabled style="padding: 6px 16px; font-size: 0.9rem; margin-left: auto;">Итоги (выполните все)</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="1" type="button"><span class="badge">1</span>Объяснение явлений</button>
+    <button class="tab" data-tab="2" type="button"><span class="badge">2</span>Применение знаний</button>
+    <button class="tab" data-tab="3" type="button"><span class="badge">3</span>Интерпретация данных</button>
+    <button class="tab" data-tab="4" type="button"><span class="badge">4</span>Понимание исследования</button>
+  </nav>
+
+  <!-- ЗАДАНИЕ 1 -->
+  <section class="task active" id="task-1">
+    <div class="card">
+      <h2>Задание 1. Основные понятия <span class="badge-tag">Научное объяснение явлений</span></h2>
+      <p class="hint">Выберите один верный вариант ответа в каждом вопросе. После проверки вы увидите объяснение к каждому ответу.</p>
+      <div id="mcq1"></div>
+    </div>
+  </section>
+
+  <!-- ЗАДАНИЕ 2 -->
+  <section class="task" id="task-2">
+    <div class="card">
+      <h2>Задание 2. Восстановите последовательность <span class="badge-tag">Применение знаний</span></h2>
+      
+      <h3>Часть А. Световая фаза</h3>
+      <p class="hint">Установите последовательность процессов световой фазы фотосинтеза. Запишите соответствующую последовательность цифр, нажимая на этапы в левой колонке.</p>
+      <div id="seq2_light"></div>
+      
+      <hr style="border:0;border-top:1px solid var(--line);margin:30px 0">
+      
+      <h3>Часть Б. Темновая фаза</h3>
+      <p class="hint">Установите последовательность процессов темновой фазы фотосинтеза. Запишите соответствующую последовательность цифр, нажимая на этапы в левой колонке.</p>
+      <div id="seq2_dark"></div>
+      
+    </div>
+  </section>
+
+  <!-- ЗАДАНИЕ 3 -->
+  <section class="task" id="task-3">
+    <div class="card">
+      <h2>Задание 3. Анализ графика <span class="badge-tag">Интерпретация данных</span></h2>
+      <p class="hint">Экспериментатор изучал особенности жизнедеятельности культуры синезелёных водорослей (цианобактерий) рода Anabaena. Для этого в герметичные пробирки с питательной средой он добавлял фиксированное количество клеток Anabaena и после закачивал туда определенное количество атмосферного воздуха. Пробирки освещались различное время, после чего измерялась концентрация кислорода в пробирках. Результаты эксперимента представлены на графике.</p>
+
+      <div class="chart-box">
+        <svg viewBox="0 0 500 350" width="100%" style="max-width:500px;display:block;margin:0 auto;" role="img" aria-label="График зависимости концентрации кислорода от времени освещения">
+          <g stroke="#e6efe9" stroke-width="1">
+            <line x1="60" y1="75" x2="460" y2="75"/>
+            <line x1="60" y1="120" x2="460" y2="120"/>
+            <line x1="60" y1="165" x2="460" y2="165"/>
+            <line x1="60" y1="210" x2="460" y2="210"/>
+            <line x1="60" y1="255" x2="460" y2="255"/>
+            <line x1="128" y1="30" x2="128" y2="300"/>
+            <line x1="196" y1="30" x2="196" y2="300"/>
+            <line x1="264" y1="30" x2="264" y2="300"/>
+            <line x1="332" y1="30" x2="332" y2="300"/>
+            <line x1="400" y1="30" x2="400" y2="300"/>
+          </g>
+          <defs>
+            <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L7,3 L0,6 Z" fill="#1c2a22"/>
+            </marker>
+          </defs>
+          <line x1="60" y1="300" x2="60" y2="20" stroke="#1c2a22" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <line x1="60" y1="300" x2="470" y2="300" stroke="#1c2a22" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="30" y="165" transform="rotate(-90 30 165)" text-anchor="middle" font-size="13" fill="#1c2a22">Концентрация кислорода (%)</text>
+          <text x="265" y="340" text-anchor="middle" font-size="13" fill="#1c2a22">Время освещения (мин.)</text>
+          <g font-size="13" fill="#1c2a22">
+            <text x="60" y="320" text-anchor="middle">0</text>
+            <text x="128" y="320" text-anchor="middle">5</text>
+            <text x="196" y="320" text-anchor="middle">10</text>
+            <text x="264" y="320" text-anchor="middle">15</text>
+            <text x="332" y="320" text-anchor="middle">20</text>
+            <text x="400" y="320" text-anchor="middle">25</text>
+            <text x="50" y="304" text-anchor="end">20</text>
+            <text x="50" y="259" text-anchor="end">21</text>
+            <text x="50" y="214" text-anchor="end">22</text>
+            <text x="50" y="169" text-anchor="end">23</text>
+            <text x="50" y="124" text-anchor="end">24</text>
+            <text x="50" y="79" text-anchor="end">25</text>
+            <text x="50" y="34" text-anchor="end">26</text>
+          </g>
+          <polyline fill="none" stroke="#1c2a22" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="128,255 196,196.5 264,165 332,138 400,75"/>
+          <g fill="#1c2a22">
+            <circle cx="128" cy="255" r="4"/>
+            <circle cx="196" cy="196.5" r="4"/>
+            <circle cx="264" cy="165" r="4"/>
+            <circle cx="332" cy="138" r="4"/>
+            <circle cx="400" cy="75" r="4"/>
+          </g>
+        </svg>
+      </div>
+
+      <div id="mcq3"></div>
+    </div>
+  </section>
+
+  <!-- ЗАДАНИЕ 4 -->
+  <section class="task" id="task-4">
+    <div class="card">
+      <h2>Задание 4. Работа с данными <span class="badge-tag">Понимание исследования</span></h2>
+      <p class="hint">Ученик освещал веточку элодеи лампой с разного расстояния и в течение минуты подсчитывал пузырьки кислорода. Результаты — в таблице.</p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Расстояние от лампы, см</th><th>10</th><th>20</th><th>30</th><th>40</th><th>50</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Число пузырьков за 1 мин</td><td>48</td><td>26</td><td>15</td><td>9</td><td>5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="mcq4"></div>
+    </div>
+  </section>
+
+  <footer class="note">Тренажёр работает офлайн: один HTML-файл, без установки программ и подключения к интернету.</footer>
+</div>
+
+<!-- Салют и модальное окно результатов -->
+<canvas id="fw-canvas"></canvas>
+
+<div id="result-modal" class="modal hidden">
+  <div class="modal-content">
+    <h2 style="margin-top:0; color:var(--green-dark);">🎉 Поздравляем!</h2>
+    <p>Вы успешно завершили интерактивный тренажёр «Фотосинтез».</p>
+    <div class="score-big"><span id="final-score">0</span> / <span id="max-score">22</span></div>
+    <p class="score-desc">набранных баллов</p>
+    <button class="btn btn-primary" id="close-modal" style="width: 100%;">Отлично!</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   Утилиты
+   ========================================================= */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function shuffleQuestion(q) {
+  const opts = q.opts.map((text, i) => ({ text, correct: i === q.correct }));
+  const shuffled = shuffle(opts);
+  return {
+    q: q.q,
+    opts: shuffled.map(o => o.text),
+    correct: shuffled.findIndex(o => o.correct),
+    why: q.why
+  };
+}
+
+/* =========================================================
+   Прогресс
+   ========================================================= */
+const progress = {
+  data: {},
+  mark(key, correct, total){
+    this.data[key] = {correct, total};
+    this.render();
+  },
+  render(){
+    let done = 0, cor = 0, tot = 0;
+    
+    const t1 = this.data['t1'];
+    if(t1) { done++; cor += t1.correct; tot += t1.total; }
+    
+    const t2a = this.data['t2_light'];
+    const t2b = this.data['t2_dark'];
+    if(t2a && t2b) {
+      done++; cor += t2a.correct + t2b.correct; tot += t2a.total + t2b.total;
+    }
+    
+    const t3 = this.data['t3'];
+    if(t3) { done++; cor += t3.correct; tot += t3.total; }
+    
+    const t4 = this.data['t4'];
+    if(t4) { done++; cor += t4.correct; tot += t4.total; }
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      const tabNum = tab.dataset.tab;
+      let isDone = false;
+      
+      if(tabNum === '1' && t1) isDone = true;
+      if(tabNum === '2' && t2a && t2b) isDone = true;
+      if(tabNum === '3' && t3) isDone = true;
+      if(tabNum === '4' && t4) isDone = true;
+      
+      const badge = tab.querySelector('.badge');
+      if(isDone){
+        tab.classList.add('done');
+        badge.textContent = '✓';
+      } else {
+        tab.classList.remove('done');
+        badge.textContent = tabNum;
+      }
+    });
+
+    document.getElementById('stats').textContent = done
+      ? `Заданий выполнено: ${done}/4 · Правильных ответов: ${cor} из ${tot}`
+      : 'Заданий выполнено: 0/4';
+    document.getElementById('bar').style.width = (done / 4 * 100) + '%';
+
+    // Активация кнопки итогов
+    const btn = document.getElementById('btn-show-results');
+    if (done === 4) {
+      btn.disabled = false;
+      btn.classList.remove('btn-ghost');
+      btn.classList.add('btn-primary');
+      btn.textContent = '🏆 Показать итоги';
+    } else {
+      btn.disabled = true;
+      btn.classList.add('btn-ghost');
+      btn.classList.remove('btn-primary');
+      btn.textContent = 'Итоги (выполните все)';
+    }
+  }
+};
+
+/* =========================================================
+   Универсальный компонент «вопросы с выбором ответа»
+   ========================================================= */
+function createMCQ(host, questions, progressKey){
+  const answers = new Array(questions.length).fill(null);
+  host.innerHTML = '';
+  const cards = [];
+
+  questions.forEach((q, qi) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+
+    const head = document.createElement('div');
+    head.className = 'q-head';
+    head.innerHTML = '<span class="q-num">' + (qi + 1) + '</span><span>' + q.q + '</span>';
+    card.appendChild(head);
+
+    const opts = document.createElement('div');
+    opts.className = 'q-opts';
+    const btns = [];
+
+    q.opts.forEach((text, oi) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt';
+      b.innerHTML = '<span class="dot"></span><span class="opt-text">' + text + '</span>';
+      b.addEventListener('click', () => {
+        if(card.dataset.locked === '1') return;
+        answers[qi] = oi;
+        btns.forEach((x, xi) => x.classList.toggle('selected', xi === oi));
+      });
+      opts.appendChild(b);
+      btns.push(b);
+    });
+    card.appendChild(opts);
+
+    const fb = document.createElement('div');
+    fb.className = 'feedback';
+    card.appendChild(fb);
+
+    host.appendChild(card);
+    cards.push({card, btns, fb});
+  });
+
+  const bar = document.createElement('div');
+  bar.className = 'action-bar';
+  const checkBtn = document.createElement('button');
+  checkBtn.type = 'button';
+  checkBtn.className = 'btn btn-primary';
+  checkBtn.textContent = 'Проверить ответы';
+  const retryBtn = document.createElement('button');
+  retryBtn.type = 'button';
+  retryBtn.className = 'btn btn-ghost';
+  retryBtn.textContent = 'Попробовать снова';
+  retryBtn.hidden = true;
+  const score = document.createElement('span');
+  score.className = 'score';
+  bar.append(checkBtn, retryBtn, score);
+  host.appendChild(bar);
+
+  checkBtn.addEventListener('click', () => {
+    let correct = 0, unanswered = 0;
+
+    cards.forEach((c, qi) => {
+      const q = questions[qi];
+      if(answers[qi] === null) unanswered++;
+      const isRight = answers[qi] === q.correct;
+      if(isRight) correct++;
+
+      c.card.dataset.locked = '1';
+      c.card.classList.add(isRight ? 'is-right' : 'is-wrong');
+
+      c.btns.forEach((b, bi) => {
+        b.classList.remove('selected');
+        if(bi === q.correct) b.classList.add('correct');
+        if(bi === answers[qi] && !isRight) b.classList.add('wrong');
+        b.disabled = true;
+      });
+
+      let html;
+      if(answers[qi] === null){
+        html = '<b>Ответ не выбран.</b> ' + q.why;
+      } else if(isRight){
+        html = '<b>Верно!</b> ' + q.why;
+      } else {
+        html = '<b>Неверно.</b> Правильный ответ выделен зелёным. ' + q.why;
+      }
+      c.fb.className = 'feedback show ' + (isRight ? 'fb-ok' : 'fb-bad');
+      c.fb.innerHTML = html;
+    });
+
+    score.innerHTML = 'Правильно: <b>' + correct + '</b> из ' + questions.length +
+      (unanswered ? ' · без ответа: ' + unanswered : '');
+    checkBtn.hidden = true;
+    retryBtn.hidden = false;
+    progress.mark(progressKey, correct, questions.length);
+  });
+
+  retryBtn.addEventListener('click', () => {
+    answers.fill(null);
+    cards.forEach(c => {
+      c.card.dataset.locked = '0';
+      c.card.classList.remove('is-right', 'is-wrong');
+      c.btns.forEach(b => {
+        b.classList.remove('selected', 'correct', 'wrong');
+        b.disabled = false;
+      });
+      c.fb.className = 'feedback';
+      c.fb.innerHTML = '';
+    });
+    checkBtn.hidden = false;
+    retryBtn.hidden = true;
+    score.textContent = '';
+  });
+}
+
+/* =========================================================
+   Компонент «установите последовательность»
+   ========================================================= */
+function createSequencer(host, items, explanation, progressKey, correctIndices = null){
+  let pool = [], chosen = [], locked = false;
+  const target = correctIndices || items.map((_, i) => i);
+
+  host.innerHTML =
+    '<div class="seq-wrap">' +
+      '<div class="seq-col"><h4>Этапы (перемешаны)</h4><div class="seq-pool"></div></div>' +
+      '<div class="seq-col"><h4>Ваш порядок</h4><div class="seq-answer"></div></div>' +
+    '</div>' +
+    '<div class="action-bar" style="margin-top:16px">' +
+      '<button type="button" class="btn btn-primary seq-check">Проверить</button>' +
+      '<button type="button" class="btn btn-ghost seq-retry" hidden>Попробовать снова</button>' +
+      '<span class="score seq-score"></span>' +
+    '</div>' +
+    '<div class="feedback seq-fb"></div>';
+
+  const poolEl  = host.querySelector('.seq-pool');
+  const ansEl   = host.querySelector('.seq-answer');
+  const fbEl    = host.querySelector('.seq-fb');
+  const scoreEl = host.querySelector('.seq-score');
+  const checkBtn = host.querySelector('.seq-check');
+  const retryBtn = host.querySelector('.seq-retry');
+
+  function render(){
+    poolEl.innerHTML = '';
+    pool.forEach(id => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'seq-item';
+      b.textContent = items[id];
+      b.addEventListener('click', () => {
+        if(locked) return;
+        chosen.push(id);
+        pool = pool.filter(x => x !== id);
+        render();
+      });
+      poolEl.appendChild(b);
+    });
+    if(!pool.length){
+      const p = document.createElement('p');
+      p.className = 'seq-empty';
+      p.textContent = 'Все этапы распределены';
+      poolEl.appendChild(p);
+    }
+
+    ansEl.innerHTML = '';
+    if(!chosen.length){
+      const p = document.createElement('p');
+      p.className = 'seq-empty';
+      p.textContent = 'Нажимайте на этапы слева — они выстроятся здесь по порядку.';
+      ansEl.appendChild(p);
+    }
+    chosen.forEach((id, idx) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'seq-item';
+      b.innerHTML = '<span class="seq-num">' + (idx + 1) + '</span><span>' + items[id] + '</span>';
+      b.addEventListener('click', () => {
+        if(locked) return;
+        chosen.splice(idx, 1);
+        pool.push(id);
+        render();
+      });
+      ansEl.appendChild(b);
+    });
+  }
+
+  function reset(){
+    pool = shuffle(items.map((_, i) => i));
+    chosen = [];
+    locked = false;
+    fbEl.className = 'feedback';
+    fbEl.innerHTML = '';
+    scoreEl.textContent = '';
+    checkBtn.hidden = false;
+    retryBtn.hidden = true;
+    render();
+  }
+
+  checkBtn.addEventListener('click', () => {
+    if(chosen.length < items.length){
+      fbEl.className = 'feedback show fb-bad';
+      fbEl.innerHTML = '<b>Не все этапы расставлены.</b> Разместите все этапы в правой колонке и нажмите «Проверить».';
+      return;
+    }
+    locked = true;
+    render();
+
+    let correctCount = 0;
+    Array.from(ansEl.children).forEach((el, i) => {
+      const ok = chosen[i] === target[i];
+      if(ok) correctCount++;
+      el.classList.add(ok ? 'right' : 'wrong');
+      el.querySelector('.seq-num').textContent = ok ? '✓' : (i + 1);
+    });
+
+    const allRight = correctCount === items.length;
+    scoreEl.innerHTML = 'Верно на своих местах: <b>' + correctCount + '</b> из ' + items.length;
+    fbEl.className = 'feedback show ' + (allRight ? 'fb-ok' : 'fb-bad');
+    fbEl.innerHTML =
+      (allRight ? '<b>Отлично! Последовательность восстановлена верно.</b> ' : '<b>Порядок нарушен.</b> ') +
+      '<br><b>Правильная последовательность:</b>' +
+      '<ol>' + target.map(idx => '<li>' + items[idx] + '</li>').join('') + '</ol>' +
+      '<div style="margin-top:10px">' + explanation + '</div>';
+
+    checkBtn.hidden = true;
+    retryBtn.hidden = false;
+    progress.mark(progressKey, correctCount, items.length);
+  });
+
+  retryBtn.addEventListener('click', reset);
+  reset();
+}
+
+/* =========================================================
+   СОДЕРЖАНИЕ ЗАДАНИЙ
+   ========================================================= */
+
+/* ---------- Задание 1 ---------- */
+const t1_raw = [
+  {
+    q: 'Где происходит световая фаза фотосинтеза?',
+    opts: [
+      'В строме хлоропласта',
+      'На мембранах тилакоидов гран',
+      'В цитоплазме клетки',
+      'В матриксе митохондрий'
+    ],
+    correct: 1,
+    why: 'На мембранах тилакоидов расположены фотосистемы, цепь переноса электронов и АТФ-синтаза — именно там идут светозависимые реакции. В строме протекает темновая фаза (цикл Кальвина).'
+  },
+  {
+    q: 'Какой процесс является источником кислорода, выделяющегося при фотосинтезе?',
+    opts: [
+      'Разложение углекислого газа',
+      'Фотолиз воды под действием энергии света',
+      'Восстановление НАДФ⁺',
+      'Синтез АТФ'
+    ],
+    correct: 1,
+    why: 'Кислород образуется при фотолизе воды в световой фазе: 2H₂O → 4H⁺ + 4e⁻ + O₂. Атомы кислорода из CO₂ в состав O₂ не входят — они идут на синтез углеводов.'
+  },
+  {
+    q: 'Какие вещества, образовавшиеся в световой фазе, используются в цикле Кальвина?',
+    opts: [
+      'Кислород и глюкоза',
+      'АТФ и НАДФ·Н',
+      'Углекислый газ и вода',
+      'Пировиноградная кислота и НАД⁺'
+    ],
+    correct: 1,
+    why: 'Световая фаза «запасает энергию» в виде АТФ и восстановителя НАДФ·Н. Именно они расходуются в темновой фазе на восстановление 3-фосфоглицериновой кислоты до триозофосфатов.'
+  },
+  {
+    q: 'Почему темновую фазу называют «темновой»?',
+    opts: [
+      'Она идёт только ночью',
+      'Она не нуждается в свете непосредственно, но использует продукты световой фазы',
+      'Она протекает в полной темноте внутри хлоропласта',
+      'В ней не происходит химических реакций'
+    ],
+    correct: 1,
+    why: 'Реакции цикла Кальвина не требуют квантов света напрямую. Но они быстро останавливаются без АТФ и НАДФ·Н, которые поставляет световая фаза, поэтому днём тёмновая фаза тоже идёт.'
+  },
+  {
+    q: 'Сколько молекул CO₂ нужно связать, чтобы синтезировать одну молекулу глюкозы?',
+    opts: ['1', '2', '6', '12'],
+    correct: 2,
+    why: 'В глюкозе C₆H₁₂O₆ шесть атомов углерода, значит нужно шесть молекул CO₂. На каждую расходуется 3 АТФ и 2 НАДФ·Н, итого на одну глюкозу — 18 АТФ и 12 НАДФ·Н.'
+  }
+];
+const t1 = t1_raw.map(shuffleQuestion);
+
+/* ---------- Задание 2 (Световая фаза) ---------- */
+const seqItemsLight = [
+  '1) разность зарядов на мембране тилакоида',
+  '2) поглощение квантов света пигментом',
+  '3) возбуждение хлорофилла',
+  '4) фотофосфорилирование',
+  '5) восстановление переносчика электронов'
+];
+const seqLightCorrect = [1, 2, 0, 3, 4]; // Индексы для 23145
+const seqLightExplanation = 
+  'В ходе световой фазы фотосинтеза молекулы хлорофилла поглощают квант света (2). За счет этого электрон переходит в возбужденное состояние, отрывается и поступает в цепь переносчиков (3). Чтобы восполнить потерю электрона, происходит расщепление воды (фотолиз). Продуктами фотолиза являются кислород, протоны и электроны. Кислород улетает в атмосферу как побочный продукт. Электрон возвращается к возбуждённому хлорофиллу. Протон идёт на внутреннюю сторону мембраны тилакоида. На мембране тилакоида возникает разность зарядов (1). На внешней стороне мембраны накапливаются электроны, а на внутренней после фотолиза остаются протоны. Энергия разности зарядов используется АТФ-синтазой для синтеза АТФ (фотофосфорилирование) (4). Протоны и электроны, переходя через мембрану тилакоида, связываются с переносчиком и образуют НАДФ·Н (5).<br><br><b>Ответ: 23145</b>';
+
+/* ---------- Задание 2 (Темновая фаза) ---------- */
+const seqItemsDark = [
+  '1) восстановление органических веществ с участием НАДФН',
+  '2) связывание углекислого газа с рибулозобисфосфатом',
+  '3) синтез молекул глюкозы',
+  '4) образование нестойкого шестиуглеродного соединения',
+  '5) накопление крахмала'
+];
+const seqDarkCorrect = [1, 3, 0, 2, 4]; // Индексы для 24135
+const seqDarkExplanation = 
+  'В темновой фазе происходят циклические ферментативные реакции - цикл Кальвина. Первой реакцией цикла является фиксация углекислого газа - его связывание с пятиуглеродным сахаром (пентозой) - рибулозодифосфатом (2). При этом образуется нестойкое шестиуглеродное соединение (С6), распадающееся на две молекулы С3 (4). В дальнейших реакциях происходит восстановление органических веществ за счет окисления НАДФН до НАДФ+ (1). Энергия для реакций обеспечивается при расщеплении АТФ. В конечном итоге синтезируется глюкоза (3), а из нее - крахмал (5).<br><br><b>Ответ: 24135</b>';
+
+/* ---------- Задание 3 ---------- */
+const t3_raw = [
+  {
+    q: 'Как в эксперименте будет изменяться количество углекислого газа в пробирке?',
+    opts: [
+      'Увеличиваться, так как выделяется при дыхании',
+      'Уменьшаться, так как он используется в процессе фотосинтеза для образования органических соединений',
+      'Оставаться неизменным',
+      'Сначала увеличиваться, затем уменьшаться'
+    ],
+    correct: 1,
+    why: 'В процессе фотосинтеза углекислый газ фиксируется (используется для образования органических соединений), поэтому его количество в закрытой пробирке будет уменьшаться.'
+  },
+  {
+    q: 'Как изменится концентрация кислорода в пробирке после выключения света?',
+    opts: [
+      'Увеличится, так как начнется активный фотосинтез',
+      'Уменьшится, так как кислород будет использоваться в процессе дыхания (аэробного окисления), а фотосинтез прекратится',
+      'Не изменится',
+      'Сначала уменьшится, затем увеличится'
+    ],
+    correct: 1,
+    why: 'После выключения света световая фаза фотосинтеза прекращается, и кислород перестает выделяться. При этом клетки продолжают дышать, расходуя кислород на аэробное окисление, поэтому его концентрация уменьшится.'
+  },
+  {
+    q: 'Возможно ли для более точного эксперимента выделить хлоропласты из синезелёных водорослей (цианобактерий) рода Anabaena?',
+    opts: [
+      'Да, так как они имеют крупные хлоропласты',
+      'Нет, так как синезелёные водоросли (цианобактерии) не содержат хлоропластов, они относятся к прокариотам',
+      'Да, но только при мощном освещении',
+      'Нет, так как хлоропласты у них слишком малы для выделения'
+    ],
+    correct: 1,
+    why: 'Цианобактерии — это прокариоты. У них нет мембранных органоидов, в том числе хлоропластов. Фотосинтез у них происходит на тилакоидах, которые не окружены мембраной.'
+  }
+];
+const t3 = t3_raw.map(shuffleQuestion);
+
+/* ---------- Задание 4 ---------- */
+const t4_raw = [
+  {
+    q: 'Как изменяется число пузырьков при увеличении расстояния от лампы с 10 до 50 см?',
+    opts: ['Увеличивается', 'Уменьшается', 'Не изменяется', 'Сначала растёт, затем падает'],
+    correct: 1,
+    why: 'Значения падают с 48 до 5 пузырьков в минуту. Чем дальше лампа, тем меньше освещённость — и тем медленнее идёт фотосинтез, поэтому кислорода выделяется меньше.'
+  },
+  {
+    q: 'Какая переменная в этом опыте является независимой (её изменяет экспериментатор)?',
+    opts: [
+      'Число пузырьков за минуту',
+      'Расстояние от лампы до растения',
+      'Температура воды',
+      'Объём сосуда'
+    ],
+    correct: 1,
+    why: 'Независимая переменная — то, что задаёт экспериментатор (расстояние, то есть освещённость). Зависимая переменная — то, что измеряют (число пузырьков за минуту). Остальные условия должны быть одинаковыми.'
+  },
+  {
+    q: 'Какое утверждение соответствует результатам опыта?',
+    opts: [
+      'Скорость фотосинтеза не зависит от освещённости',
+      'В исследованном диапазоне чем выше освещённость, тем выше скорость фотосинтеза',
+      'Чем дальше лампа, тем быстрее идёт фотосинтез',
+      'Фотосинтез идёт только в полной темноте'
+    ],
+    correct: 1,
+    why: 'Данные таблицы показывают прямую связь: при уменьшении расстояния (росте освещённости) число пузырьков растёт. На этом участке свет ещё не насыщает процесс, поэтому зависимость выражена.'
+  },
+  {
+    q: 'Что обязательно нужно оставить неизменным, чтобы такой опыт был корректным?',
+    opts: [
+      'Расстояние от лампы',
+      'Температуру воды, мощность лампы, размер веточек и время наблюдения',
+      'Число пузырьков',
+      'Только время наблюдения'
+    ],
+    correct: 1,
+    why: 'Принцип единственного различия: менять можно только одну переменную — расстояние (освещённость). Иначе нельзя утверждать, что результат вызван именно светом, а не температурой или разным размером растений.'
+  }
+];
+const t4 = t4_raw.map(shuffleQuestion);
+
+/* =========================================================
+   Логика салюта (Fireworks)
+   ========================================================= */
+let fwRunning = false;
+let fwAnimationId;
+
+function startFireworks() {
+  const canvas = document.getElementById('fw-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = 'block';
+  fwRunning = true;
+
+  let particles = [];
+  let rockets = [];
+
+  function createParticle(x, y, color) {
+    return {
+      x: x, y: y,
+      vx: (Math.random() - 0.5) * 8,
+      vy: (Math.random() - 0.5) * 8,
+      alpha: 1,
+      color: color,
+      decay: Math.random() * 0.02 + 0.01,
+      radius: Math.random() * 2 + 1.5
+    };
+  }
+
+  function createRocket() {
+    return {
+      x: Math.random() * canvas.width,
+      y: canvas.height,
+      targetY: Math.random() * (canvas.height * 0.5),
+      vy: - (Math.random() * 4 + 5),
+      color: `hsl(${Math.random() * 360}, 80%, 60%)`
+    };
+  }
+
+  function animate() {
+    if (!fwRunning) return;
+    fwAnimationId = requestAnimationFrame(animate);
+
+    // Плавное затухание предыдущего кадра (шлейф)
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalCompositeOperation = 'source-over';
+
+    // Запуск новых ракет
+    if (Math.random() < 0.05) rockets.push(createRocket());
+
+    // Отрисовка ракет
+    for (let i = rockets.length - 1; i >= 0; i--) {
+      let r = rockets[i];
+      r.y += r.vy;
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = r.color;
+      ctx.fill();
+
+      if (r.y <= r.targetY) {
+        rockets.splice(i, 1);
+        // Взрыв
+        for (let j = 0; j < 40; j++) {
+          particles.push(createParticle(r.x, r.y, r.color));
+        }
+      }
+    }
+
+    // Отрисовка частиц
+    for (let i = particles.length - 1; i >= 0; i--) {
+      let p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.08; // Гравитация
+      p.alpha -= p.decay;
+
+      if (p.alpha <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      ctx.globalAlpha = p.alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  animate();
+}
+
+function stopFireworks() {
+  fwRunning = false;
+  cancelAnimationFrame(fwAnimationId);
+  const canvas = document.getElementById('fw-canvas');
+  canvas.style.display = 'none';
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+window.addEventListener('resize', () => {
+  const canvas = document.getElementById('fw-canvas');
+  if (canvas.style.display === 'block') {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+});
+
+/* =========================================================
+   Инициализация
+   ========================================================= */
+createMCQ(document.getElementById('mcq1'), t1, 't1');
+createSequencer(document.getElementById('seq2_light'), seqItemsLight, seqLightExplanation, 't2_light', seqLightCorrect);
+createSequencer(document.getElementById('seq2_dark'), seqItemsDark, seqDarkExplanation, 't2_dark', seqDarkCorrect);
+createMCQ(document.getElementById('mcq3'), t3, 't3');
+createMCQ(document.getElementById('mcq4'), t4, 't4');
+
+/* Переключение вкладок */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === tab));
+    document.querySelectorAll('.task').forEach(s => {
+      s.classList.toggle('active', s.id === 'task-' + tab.dataset.tab);
+    });
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  });
+});
+
+/* Логика модального окна итогов */
+document.getElementById('btn-show-results').addEventListener('click', () => {
+  let cor = 0;
+  let tot = 0;
+  for (const key in progress.data) {
+    cor += progress.data[key].correct;
+    tot += progress.data[key].total;
+  }
+
+  document.getElementById('final-score').textContent = cor;
+  document.getElementById('max-score').textContent = tot;
+  document.getElementById('result-modal').classList.remove('hidden');
+  startFireworks();
+});
+
+document.getElementById('close-modal').addEventListener('click', () => {
+  document.getElementById('result-modal').classList.add('hidden');
+  stopFireworks();
+});
+
+progress.render();
+</script>
+</body>
+</html>
